@@ -159,11 +159,24 @@ user_input = st.text_input(
     max_chars=300
 )
 
-# ------------------ Ask Button ------------------
-if st.button("Ask to Ask Genie") and user_input.strip():
+# ------------------ Ask / Clear Buttons ------------------
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    ask_clicked = st.button("Ask to Ask Genie")
+
+with col2:
+    clear_clicked = st.button("Clear")
+
+if ask_clicked and user_input.strip():
     st.session_state.user_query = user_input
     with st.spinner("Thinking like a banker..."):
         st.session_state.response = get_bank_response(user_input)
+
+if clear_clicked:
+    st.session_state.user_query = ""
+    st.session_state.response = None
+    st.experimental_rerun()
 
 # ------------------ Output ------------------
 if st.session_state.response:
