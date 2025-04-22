@@ -69,7 +69,7 @@ if "detail_level" not in st.session_state:
     st.session_state.detail_level = "Short"
 
 # ------------------ Header ------------------
-st.title("🧞 Ask Genie - Internal Q&A Assistant")
+st.title("🏦 Ask Genie - Internal Q&A Assistant")
 st.markdown("""
 👋 Welcome to **Ask Genie** — Empowering Bank Teams with Instant, Multilingual Support.
 
@@ -86,7 +86,7 @@ st.session_state.detail_level = st.selectbox(
 )
 
 # ------------------ Prompt Template ------------------
-ASK_GENIE_PROMPT = """
+BANK_GENIE_PROMPT = """
 You are Ask Genie — an internal assistant for bank employees only. You answer only bank-related queries like:
 - Account opening/closure, KYC, dormant accounts
 - Deposits, withdrawals, cash handling rules
@@ -103,17 +103,17 @@ You are Ask Genie — an internal assistant for bank employees only. You answer 
 """
 
 if st.session_state.detail_level == "Short":
-    ASK_GENIE_PROMPT += """
+    BANK_GENIE_PROMPT += """
 - Give a short, summarized answer (1–3 lines)
 - Include 1 simple real-life example (use Indian context and INR)
 """
 else:
-    ASK_GENIE_PROMPT += """
+    BANK_GENIE_PROMPT += """
 - Give a clear, helpful answer (up to 5–6 lines)
 - Include 1 proper real-life example with Indian context and INR
 """
 
-ASK_GENIE_PROMPT += """
+BANK_GENIE_PROMPT += """
 - Keep answer and example on separate lines with space between
 - Avoid repeating the word "Example" if it’s already used
 - Answer in the same language the user asked
@@ -142,7 +142,7 @@ def get_bank_response(query):
         response = openai.ChatCompletion.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": f"{ASK_GENIE_PROMPT}\n\n{lang_instruction}"},
+                {"role": "system", "content": f"{BANK_GENIE_PROMPT}\n\n{lang_instruction}"},
                 {"role": "user", "content": query}
             ],
             temperature=0.3
@@ -153,29 +153,17 @@ def get_bank_response(query):
         return None
 
 # ------------------ Input Field ------------------
-st.text_input(
+user_input = st.text_input(
     "Ask your question (in any language):",
-    key="user_query",
+    value=st.session_state.user_query,
     max_chars=300
 )
 
-# ------------------ Buttons ------------------
-col1, col2 = st.columns([3, 1])
-
-ask_clicked = col1.button("Ask to Ask Genie")
-clear_clicked = col2.button("Clear")
-
-# ------------------ Clear Logic ------------------
-if clear_clicked:
-    st.session_state.user_query = ""
-    st.session_state.response = None
-    st.session_state.detail_level = "Short"
-    st.stop()
-
-# ------------------ Ask Logic ------------------
-if ask_clicked and st.session_state.user_query.strip():
+# ------------------ Ask Button ------------------
+if st.button("Ask to Ask Genie") and user_input.strip():
+    st.session_state.user_query = user_input
     with st.spinner("Thinking like a banker..."):
-        st.session_state.response = get_bank_response(st.session_state.user_query)
+        st.session_state.response = get_bank_response(user_input)
 
 # ------------------ Output ------------------
 if st.session_state.response:
