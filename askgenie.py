@@ -42,13 +42,7 @@ st.markdown("""
         width: 100%;
         border: none;
         margin-top: 10px;
-    }
-    .stButton>button:first-child {
         background-color: #000000;
-        color: white;
-    }
-    .stButton>button+button {
-        background-color: red;
         color: white;
     }
     .custom-answer {
@@ -159,27 +153,29 @@ def get_bank_response(query):
         return None
 
 # ------------------ Input Field ------------------
-user_input = st.text_input(
+st.text_input(
     "Ask your question (in any language):",
-    value=st.session_state.user_query,
+    key="user_query",
     max_chars=300
 )
 
-# ------------------ Ask and Clear Buttons ------------------
+# ------------------ Buttons ------------------
 col1, col2 = st.columns([3, 1])
+
 ask_clicked = col1.button("Ask to Ask Genie")
 clear_clicked = col2.button("Clear")
 
-if ask_clicked and user_input.strip():
-    st.session_state.user_query = user_input
-    with st.spinner("Thinking like a banker..."):
-        st.session_state.response = get_bank_response(user_input)
-
+# ------------------ Clear Logic ------------------
 if clear_clicked:
     st.session_state.user_query = ""
     st.session_state.response = None
     st.session_state.detail_level = "Short"
-    st.stop()  # Safely stop execution after reset
+    st.stop()
+
+# ------------------ Ask Logic ------------------
+if ask_clicked and st.session_state.user_query.strip():
+    with st.spinner("Thinking like a banker..."):
+        st.session_state.response = get_bank_response(st.session_state.user_query)
 
 # ------------------ Output ------------------
 if st.session_state.response:
