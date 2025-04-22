@@ -4,7 +4,7 @@ import os
 from langdetect import detect
 
 # ------------------ App Configuration ------------------
-st.set_page_config(page_title="Bank Genie - Internal Assistant", layout="centered")
+st.set_page_config(page_title="Ask Genie - Internal Assistant", layout="centered")
 
 # ------------------ Load OpenAI API Key ------------------
 api_key = os.getenv("OPENAI_API_KEY")
@@ -69,13 +69,13 @@ if "detail_level" not in st.session_state:
     st.session_state.detail_level = "Short"
 
 # ------------------ Header ------------------
-st.title("🏦 Bank Genie - Internal Q&A Assistant")
+st.title("🏦 Ask Genie - Internal Q&A Assistant")
 st.markdown("""
-👋 Welcome to **Bank Genie** — Empowering Bank Teams with Instant, Multilingual Support.
+👋 Welcome to **Ask Genie** — Empowering Bank Teams with Instant, Multilingual Support.
 
-💬 Ask any bank-related question below, and Bank Genie will provide accurate, helpful answers tailored to your preference — whether concise or in-depth.
+💬 Ask any bank-related question below, and Ask Genie will provide accurate, helpful answers tailored to your preference — whether concise or in-depth.
 
-📞 For further assistance or support, feel free to call or WhatsApp us at +91-8830720742.
+📞 For further assistance or support, feel free to call or WhatsApp us at +91-7032055760.
 """)
 
 # ------------------ Detail Level Selector ------------------
@@ -87,7 +87,7 @@ st.session_state.detail_level = st.selectbox(
 
 # ------------------ Prompt Template ------------------
 BANK_GENIE_PROMPT = """
-You are Bank Genie — an internal assistant for bank employees only. You answer only bank-related queries like:
+You are Ask Genie — an internal assistant for bank employees only. You answer only bank-related queries like:
 - Account opening/closure, KYC, dormant accounts
 - Deposits, withdrawals, cash handling rules
 - NEFT, RTGS, UPI, IMPS, cheque handling
@@ -160,7 +160,7 @@ user_input = st.text_input(
 )
 
 # ------------------ Ask Button ------------------
-if st.button("Ask to Bank Genie") and user_input.strip():
+if st.button("Ask to Ask Genie") and user_input.strip():
     st.session_state.user_query = user_input
     with st.spinner("Thinking like a banker..."):
         st.session_state.response = get_bank_response(user_input)
