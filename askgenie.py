@@ -42,7 +42,13 @@ st.markdown("""
         width: 100%;
         border: none;
         margin-top: 10px;
+    }
+    .stButton>button:first-child {
         background-color: #000000;
+        color: white;
+    }
+    .stButton>button+button {
+        background-color: red;
         color: white;
     }
     .custom-answer {
@@ -69,7 +75,7 @@ if "detail_level" not in st.session_state:
     st.session_state.detail_level = "Short"
 
 # ------------------ Header ------------------
-st.title("🏦 Ask Genie - Internal Q&A Assistant")
+st.title("🧞 Ask Genie - Internal Q&A Assistant")
 st.markdown("""
 👋 Welcome to **Ask Genie** — Empowering Bank Teams with Instant, Multilingual Support.
 
@@ -86,7 +92,7 @@ st.session_state.detail_level = st.selectbox(
 )
 
 # ------------------ Prompt Template ------------------
-BANK_GENIE_PROMPT = """
+ASK_GENIE_PROMPT = """
 You are Ask Genie — an internal assistant for bank employees only. You answer only bank-related queries like:
 - Account opening/closure, KYC, dormant accounts
 - Deposits, withdrawals, cash handling rules
@@ -103,17 +109,17 @@ You are Ask Genie — an internal assistant for bank employees only. You answer 
 """
 
 if st.session_state.detail_level == "Short":
-    BANK_GENIE_PROMPT += """
+    ASK_GENIE_PROMPT += """
 - Give a short, summarized answer (1–3 lines)
 - Include 1 simple real-life example (use Indian context and INR)
 """
 else:
-    BANK_GENIE_PROMPT += """
+    ASK_GENIE_PROMPT += """
 - Give a clear, helpful answer (up to 5–6 lines)
 - Include 1 proper real-life example with Indian context and INR
 """
 
-BANK_GENIE_PROMPT += """
+ASK_GENIE_PROMPT += """
 - Keep answer and example on separate lines with space between
 - Avoid repeating the word "Example" if it’s already used
 - Answer in the same language the user asked
@@ -142,7 +148,7 @@ def get_bank_response(query):
         response = openai.ChatCompletion.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": f"{BANK_GENIE_PROMPT}\n\n{lang_instruction}"},
+                {"role": "system", "content": f"{ASK_GENIE_PROMPT}\n\n{lang_instruction}"},
                 {"role": "user", "content": query}
             ],
             temperature=0.3
@@ -159,14 +165,10 @@ user_input = st.text_input(
     max_chars=300
 )
 
-# ------------------ Ask / Clear Buttons ------------------
+# ------------------ Ask and Clear Buttons ------------------
 col1, col2 = st.columns([3, 1])
-
-with col1:
-    ask_clicked = st.button("Ask to Ask Genie")
-
-with col2:
-    clear_clicked = st.button("Clear")
+ask_clicked = col1.button("Ask to Ask Genie")
+clear_clicked = col2.button("Clear")
 
 if ask_clicked and user_input.strip():
     st.session_state.user_query = user_input
@@ -176,7 +178,8 @@ if ask_clicked and user_input.strip():
 if clear_clicked:
     st.session_state.user_query = ""
     st.session_state.response = None
-    st.experimental_rerun()
+    st.session_state.detail_level = "Short"
+    st.stop()  # Safely stop execution after reset
 
 # ------------------ Output ------------------
 if st.session_state.response:
