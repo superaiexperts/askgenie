@@ -5,7 +5,7 @@ import openai
 import numpy as np
 import pickle
 
-openai.api_key = "your-openai-api-key"  # replace with your key or load from env
+openai.api_key = "your-openai-api-key"
 
 def get_embedding(text, model="text-embedding-ada-002"):
     result = openai.Embedding.create(input=[text], model=model)
@@ -25,17 +25,17 @@ def answer_from_kb(question):
     related_chunks = search_kb(question)
 
     prompt = f"""
-You are a professional banking assistant.
+You are Ask Genie, an internal banking assistant.
 
-Answer the user's question strictly based on the following information:
+Answer the user's question strictly using ONLY the below information:
 
 {''.join(related_chunks)}
 
 Question: {question}
 
-If the answer is not found, politely say "Information not available in the SOP."
+If information not found, reply: "Information not available in the SOP."
 
-Reply in the same language as the question.
+Always reply in the user's question language.
     """
 
     response = openai.ChatCompletion.create(
