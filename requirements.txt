@@ -1,4 +1,7 @@
 streamlit
-openai==0.28
+openai>=0.28
 langdetect
 requests
+PyMuPDF
+faiss-cpu
+langchain
