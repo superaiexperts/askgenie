@@ -6,7 +6,7 @@ import numpy as np
 import pickle
 from kb_loader import load_pdf, split_text
 
-openai.api_key = "your-openai-api-key"  # replace with your key or load from env
+openai.api_key = "your-openai-api-key"  # replace with env or manually set
 
 def get_embedding(text, model="text-embedding-ada-002"):
     result = openai.Embedding.create(input=[text], model=model)
@@ -29,4 +29,4 @@ if __name__ == "__main__":
     with open("chunks.pkl", "wb") as f:
         pickle.dump(chunks, f)
 
-    print("✅ Vector Store created and saved successfully!")
+    print("✅ Vector Store created successfully!")
