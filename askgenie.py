@@ -2,6 +2,7 @@ import streamlit as st
 import openai
 import os
 from langdetect import detect
+from kb_search import answer_from_kb  # 👉 NEW: Import your KB answering function
 
 # ------------------ App Configuration ------------------
 st.set_page_config(page_title="Ask Genie - Internal Assistant", layout="centered")
@@ -73,7 +74,7 @@ st.title("🏦 Ask Genie - Internal Q&A Assistant")
 st.markdown("""
 👋 Welcome to **Ask Genie** — Empowering Bank Teams with Instant, Multilingual Support.
 
-💬 Ask any bank-related question below, and Ask Genie will provide accurate, helpful answers tailored to your preference — whether concise or in-depth.
+💬 Ask any bank-related question below, and Ask Genie will provide accurate, helpful answers from official SOPs.
 
 📞 For further assistance or support, feel free to call or WhatsApp us at +91-7032055760.
 """)
@@ -84,40 +85,6 @@ st.session_state.detail_level = st.selectbox(
     ["Short", "Detailed"],
     index=0 if st.session_state.detail_level == "Short" else 1
 )
-
-# ------------------ Prompt Template ------------------
-BANK_GENIE_PROMPT = """
-You are Ask Genie — an internal assistant for bank employees only. You answer only bank-related queries like:
-- Account opening/closure, KYC, dormant accounts
-- Deposits, withdrawals, cash handling rules
-- NEFT, RTGS, UPI, IMPS, cheque handling
-- Loans, documentation, eligibility
-- Internal tools like Finacle or CBS
-- Internal policies, RBI guidelines, audits
-- Staff-related questions only if tied to internal policies
-
-❌ Do NOT answer anything unrelated to banking. Respond with:
-"I’m designed to answer only internal bank-related questions. Please ask something related to banking."
-
-✅ For valid banking questions:
-"""
-
-if st.session_state.detail_level == "Short":
-    BANK_GENIE_PROMPT += """
-- Give a short, summarized answer (1–3 lines)
-- Include 1 simple real-life example (use Indian context and INR)
-"""
-else:
-    BANK_GENIE_PROMPT += """
-- Give a clear, helpful answer (up to 5–6 lines)
-- Include 1 proper real-life example with Indian context and INR
-"""
-
-BANK_GENIE_PROMPT += """
-- Keep answer and example on separate lines with space between
-- Avoid repeating the word "Example" if it’s already used
-- Answer in the same language the user asked
-"""
 
 # ------------------ Language Detection ------------------
 def detect_user_language(text):
@@ -131,23 +98,13 @@ def detect_user_language(text):
     except:
         return "en"
 
-# ------------------ GPT Call ------------------
+# ------------------ KB Answer Call (NEW) ------------------
 def get_bank_response(query):
     try:
         query = query.strip()
         if len(query.split()) <= 3 and not query.endswith("?"):
             query = f"What is {query}?"
-        user_lang = detect_user_language(query)
-        lang_instruction = f"Answer the question in this language: {user_lang}. Use Indian context and INR for all examples. Keep the main answer and example clearly separated with a blank line."
-        response = openai.ChatCompletion.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": f"{BANK_GENIE_PROMPT}\n\n{lang_instruction}"},
-                {"role": "user", "content": query}
-            ],
-            temperature=0.3
-        )
-        return response['choices'][0]['message']['content'].strip()
+        return answer_from_kb(query)
     except Exception as e:
         st.error(f"❌ GPT Error: {e}")
         return None
@@ -168,15 +125,9 @@ if st.button("Ask to Ask Genie") and user_input.strip():
 # ------------------ Output ------------------
 if st.session_state.response:
     reply = st.session_state.response
-    if "\n\n" in reply:
-        answer, example = reply.split("\n\n", 1)
-        example_clean = example.strip().removeprefix("Example:").strip()
-        st.markdown(f"""
-        <div class='custom-answer'>{answer.strip()}</div>
-        <div class='example-line'>💡 Example: {example_clean}</div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown(f"### ✅ Answer\n{reply}")
+    st.markdown(f"""
+    <div class='custom-answer'>{reply}</div>
+    """, unsafe_allow_html=True)
 
 # ------------------ Footer ------------------
 st.markdown("""
